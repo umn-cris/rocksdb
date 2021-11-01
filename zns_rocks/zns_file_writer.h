@@ -5,18 +5,17 @@
 #ifndef LEVELDB_ZNS_FILE_WRITER_H
 #define LEVELDB_ZNS_FILE_WRITER_H
 
-#include <unordered_map>
-#include <map>
-#include <vector>
-#include <set>
 #include <functional>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <vector>
 
-#include "leveldb/env.h"
-#include "zone_test/zone_namespace.h"
-#include "zone_test/zone_mapping.h"
+#include "rocksdb/status.h"
+#include "zns_rocks/zone_mapping.h"
+#include "zns_rocks/zone_namespace.h"
 
-namespace leveldb
-{
+namespace ROCKSDB_NAMESPACE {
 
 struct WriteHints;
 
@@ -70,21 +69,13 @@ class ZnsFileWriter {
     }
   }
 
-  int GetScore() {
-    return score_;
-  }
+  int GetScore() { return score_; }
 
-  void SetScore(int score) {
-    score_ = score;
-  }
+  void SetScore(int score) { score_ = score; }
 
-  ZnsZoneInfo* GetOpenZone() {
-    return open_zone_;
-  }
+  ZnsZoneInfo* GetOpenZone() { return open_zone_; }
 
-  std::string GetCurrentFileName() {
-    return current_file_;
-  }
+  std::string GetCurrentFileName() { return current_file_; }
 
  private:
   ZnsZoneInfo* open_zone_;
@@ -107,24 +98,25 @@ class ZnsFileWriterManager {
 
   ~ZnsFileWriterManager();
 
-  //ZoneMapping::CreateFileOnZone is called inside this funciton
+  // ZoneMapping::CreateFileOnZone is called inside this funciton
   // No need to call it again.
   // file_size_max is important, we need to estimate if current zone
   // available space is enough for this file. If not, we need to get another
   // empty zone for this writer.
   Status CreateFileByThisWriter(uint64_t now_time, ZnsFileWriter* writer,
-              std::string file_name, size_t file_size_max);
+                                std::string file_name, size_t file_size_max);
 
- //ZoneMapping::DeleteFileOnZone is called inside this funciton
+  // ZoneMapping::DeleteFileOnZone is called inside this funciton
   Status DeleteFile(uint64_t now_time, std::string file_name);
 
-  //ZoneMapping::RenameFileOnZone is called inside this function
+  // ZoneMapping::RenameFileOnZone is called inside this function
   Status RenameFile(const std::string& from, const std::string& to);
 
-  Status AppendDataOnFile(std::string file_name, size_t len, const char *buffer);
+  Status AppendDataOnFile(std::string file_name, size_t len,
+                          const char* buffer);
 
-  Status ReadDataOnFile(std::string file_name, size_t offset,
-          size_t len, const char *buffer);
+  Status ReadDataOnFile(std::string file_name, size_t offset, size_t len,
+                        const char* buffer);
 
   // when close is called, it will set this writer to available
   Status CloseFile(ZnsFileWriter* writer, std::string file_name);
@@ -133,19 +125,17 @@ class ZnsFileWriterManager {
 
   Status AddFileWriter(int level, int score);
 
-  ZoneMapping* GetZoneMapping() {
-    return zone_mapping_;
-  }
+  ZoneMapping* GetZoneMapping() { return zone_mapping_; }
 
  private:
   ZoneMapping* zone_mapping_;
   std::unordered_map<std::string, FileInfoInWriter> file_to_writer_;
-  std::unordered_map<int, std::map<int, ZnsFileWriter*, std::greater<int>>> file_writer_map_;
+  std::unordered_map<int, std::map<int, ZnsFileWriter*, std::greater<int>>>
+      file_writer_map_;
   std::vector<ZnsFileWriter*> file_writers_;
-
 };
 
 extern ZnsFileWriterManager* GetDefualtZnsFileWriterManager();
 
-} // namespace leveldb
+}  // namespace ROCKSDB_NAMESPACE
 #endif

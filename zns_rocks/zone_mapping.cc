@@ -2,17 +2,18 @@
 // Created by Zhichao Cao czc199182@gmail.com 07/18/2020.
 //
 
-#include "zone_mapping.h"
-#include "hm_zone.h"
+#include "zns_rocks/zone_mapping.h"
+#include "zns_rocks/hm_zone.h"
+#include "rocksdb/status.h"
 
-namespace leveldb {
+namespace ROCKSDB_NAMESPACE {
 
 ZoneMapping::ZoneMapping(std::shared_ptr<ZoneNamespace> zns, int zone_num) {
   zns_ptr_ = zns;
   zone_num_ = zone_num;
 
   // Initilize the zone info list
-  for(int i = 0; i < zone_num_; i++) {
+  for (int i = 0; i < zone_num_; i++) {
     ZnsZoneInfo z_info;
     std::unordered_map<std::string, ZnsFileInfo*> tmp_map;
     z_info.zone_id = i;
@@ -23,7 +24,7 @@ ZoneMapping::ZoneMapping(std::shared_ptr<ZoneNamespace> zns, int zone_num) {
     zone_list_.push_back(z_info);
   }
   // store the zone pointers in the empty_zones_
-  for(int i = 0; i < zone_num_; i++) {
+  for (int i = 0; i < zone_num_; i++) {
     empty_zones_.insert(std::make_pair(i, &zone_list_[i]));
   }
 }
@@ -43,7 +44,8 @@ Status ZoneMapping::GetAndUseOneEmptyZone(ZnsZoneInfo** z_info_ptr) {
   return Status::OK();
 }
 
-Status ZoneMapping::CreateFileOnZone(uint64_t now_time, std::string file_name, int zone_id, size_t* offset) {
+Status ZoneMapping::CreateFileOnZone(uint64_t now_time, std::string file_name,
+                                     int zone_id, size_t* offset) {
   auto found = files_map_.find(file_name);
   auto z = used_zones_.find(zone_id);
   if (found != files_map_.end() || z == used_zones_.end()) {
@@ -63,7 +65,8 @@ Status ZoneMapping::CreateFileOnZone(uint64_t now_time, std::string file_name, i
   tmp_info.create_time = now_time;
   tmp_info.delete_time = 0;
   files_map_.insert(std::make_pair(file_name, tmp_info));
-  z->second->files_map.insert(std::make_pair(file_name, &(files_map_[file_name])));
+  z->second->files_map.insert(
+      std::make_pair(file_name, &(files_map_[file_name])));
   *offset = tmp_info.offset;
   return Status::OK();
 }
@@ -80,7 +83,7 @@ Status ZoneMapping::DeleteFileOnZone(uint64_t now_time, std::string file_name) {
 
   // update the zone info;
   z->second->valid_size -= found->second.length;
-  z->second->valid_file_num -=1;
+  z->second->valid_file_num -= 1;
   z->second->files_map.erase(file_name);
   auto z_info = z->second;
   if (z_info->valid_size == 0) {
@@ -98,7 +101,8 @@ Status ZoneMapping::DeleteFileOnZone(uint64_t now_time, std::string file_name) {
   return Status::OK();
 }
 
-Status ZoneMapping::RenameFileOnZone(const std::string& from, const std::string& to) {
+Status ZoneMapping::RenameFileOnZone(const std::string& from,
+                                     const std::string& to) {
   auto found = files_map_.find(from);
   if (found == files_map_.end()) {
     return Status::InvalidArgument("invalid");
@@ -125,7 +129,7 @@ Status ZoneMapping::CloseFileOnZone(std::string file_name) {
 }
 
 Status ZoneMapping::ReadFileOnZone(std::string file_name, size_t offset,
-                                    size_t len, const char *buffer) {
+                                   size_t len, const char* buffer) {
   auto found = files_map_.find(file_name);
   if (found == files_map_.end()) {
     return Status::InvalidArgument("invalid");
@@ -138,12 +142,12 @@ Status ZoneMapping::ReadFileOnZone(std::string file_name, size_t offset,
     return Status::Corruption("invalid");
   }
 
- if (offset > found->second.length) {
+  if (offset > found->second.length) {
     return Status::InvalidArgument("invalid");
   }
 
   size_t valid_len;
-  if (offset+len > found->second.length) {
+  if (offset + len > found->second.length) {
     valid_len = found->second.length - offset;
   } else {
     valid_len = len;
@@ -153,12 +157,12 @@ Status ZoneMapping::ReadFileOnZone(std::string file_name, size_t offset,
   z_address.zone_id = z->second->zone_id;
   z_address.offset = found->second.offset + offset;
   z_address.length = valid_len;
-  char *data = (char*)buffer;
+  char* data = (char*)buffer;
   return z->second->zone_ptr->ZoneRead(z_address, data);
 }
 
-Status ZoneMapping::WriteFileOnZone(std::string file_name,
-                                  size_t len, const char *buffer) {
+Status ZoneMapping::WriteFileOnZone(std::string file_name, size_t len,
+                                    const char* buffer) {
   auto found = files_map_.find(file_name);
   if (found == files_map_.end()) {
     return Status::InvalidArgument("invalid");
@@ -188,7 +192,8 @@ Status ZoneMapping::WriteFileOnZone(std::string file_name,
   return Status::OK();
 }
 
-Status ZoneMapping::GetZnsFileInfo(std::string file_name, ZnsFileInfo* file_ptr) {
+Status ZoneMapping::GetZnsFileInfo(std::string file_name,
+                                   ZnsFileInfo* file_ptr) {
   auto found = files_map_.find(file_name);
   if (found == files_map_.end()) {
     return Status::NotFound("Not find");
@@ -203,31 +208,36 @@ bool ZoneMapping::IsFileInZone(std::string file_name) {
     return false;
   }
 
-  if(found->second.f_stat == ZnsFileStat::kDeleted) {
+  if (found->second.f_stat == ZnsFileStat::kDeleted) {
     return false;
   }
   return true;
 }
 
 ZoneMapping* GetDefaultZoneMapping() {
-  std::shared_ptr<ZoneNamespace> zns_ptr = HmZoneNamespace::CreatZoneNamespace();
+  std::shared_ptr<ZoneNamespace> zns_ptr =
+      HmZoneNamespace::CreatZoneNamespace();
   static ZoneMapping* zm_ptr = new ZoneMapping(zns_ptr, ZONEFile_NUMBER);
   return zm_ptr;
 }
 
 void PrintZnsZoneInfo(ZnsZoneInfo* zfi_ptr) {
   if (zfi_ptr == nullptr) {
-    cout<<"zns_zone_info is nullptr!\n";
+    std::cout << "zns_zone_info is nullptr!\n";
   }
-  cout<<"zone id: "<<zfi_ptr->zone_id<<" valid_file_num: "
-      <<zfi_ptr->valid_file_num<<" valid_size: "<<zfi_ptr->valid_size<<"\n";
+  std::cout << "zone id: " << zfi_ptr->zone_id
+       << " valid_file_num: " << zfi_ptr->valid_file_num
+       << " valid_size: " << zfi_ptr->valid_size << "\n";
 }
 
 void PrintZnsFileInfo(ZnsFileInfo& file_info) {
-  cout<<"File name: "<<file_info.file_name<<" create_time: "<<file_info.create_time
-      <<" delete_time: "<<file_info.delete_time<<" file_status: "
-      <<(int)file_info.f_stat<<" file_length: "<<file_info.length<<" file_offset_in_zone: "
-      <<file_info.offset<<" zone_id: "<<file_info.zone_id<<"\n";
+  std::cout << "File name: " << file_info.file_name
+       << " create_time: " << file_info.create_time
+       << " delete_time: " << file_info.delete_time
+       << " file_status: " << (int)file_info.f_stat
+       << " file_length: " << file_info.length
+       << " file_offset_in_zone: " << file_info.offset
+       << " zone_id: " << file_info.zone_id << "\n";
 }
 
-} //name space
+}  // namespace ROCKSDB_NAMESPACE
