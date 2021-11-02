@@ -2,8 +2,7 @@
 // Created by Zhichao Cao czc199182@gmail.com 07/28/2020.
 //
 
-#ifndef LEVELDB_ZNS_FILE_WRITER_H
-#define LEVELDB_ZNS_FILE_WRITER_H
+#pragma once
 
 #include <functional>
 #include <map>
@@ -11,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "rocksdb/file_system.h"
 #include "rocksdb/status.h"
 #include "zns_rocks/zone_mapping.h"
 #include "zns_rocks/zone_namespace.h"
@@ -138,4 +138,3 @@ class ZnsFileWriterManager {
 extern ZnsFileWriterManager* GetDefualtZnsFileWriterManager();
 
 }  // namespace ROCKSDB_NAMESPACE
-#endif

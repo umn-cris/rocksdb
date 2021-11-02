@@ -2,8 +2,7 @@
 // Created by Zhichao Cao czc199182@gmail.com 07/18/2020.
 //
 
-#ifndef LEVELDB_ZONE_MAPPING_H
-#define LEVELDB_ZONE_MAPPING_H
+#pragma once
 
 #include <map>
 #include <unordered_map>
@@ -95,5 +94,3 @@ extern void PrintZnsZoneInfo(ZnsZoneInfo* zfi_ptr);
 extern void PrintZnsFileInfo(ZnsFileInfo& file_info);
 
 }  // namespace ROCKSDB_NAMESPACE
-
-#endif

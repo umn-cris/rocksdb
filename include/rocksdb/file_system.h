@@ -52,6 +52,15 @@ struct ConfigOptions;
 using AccessPattern = RandomAccessFile::AccessPattern;
 using FileAttributes = Env::FileAttributes;
 
+struct WriteHints {
+  // SSt files are from 0 to N, other files (e.g., WAL, Manifest) are -1
+  int write_level = -1;
+
+  // the category, sst file is 1, WAL is 2, manifest is 3,
+  // current is 4, LOG is 5. If it is 0, we ignore the infomation
+  int file_cate = -1;
+};
+
 // Priority of an IO request. This is a hint and does not guarantee any
 // particular QoS.
 // IO_LOW - Typically background reads/writes such as compaction/flush
