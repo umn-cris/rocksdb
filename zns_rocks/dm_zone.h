@@ -2,10 +2,12 @@
 // Created by Wei00161@umn.edu on 2020/5/14.
 //
 
-#ifndef LEVELDB_DM_ZONE_H
-#define LEVELDB_DM_ZONE_H
+#pragma once
 
 #include <fstream>
+#include <list>
+#include <unordered_map>
+#include <vector>
 
 #include "rocksdb/status.h"
 #include "zone_namespace.h"
@@ -164,5 +166,3 @@ class DmZoneNamespace : public ZoneNamespace {
 };
 
 }  // namespace ROCKSDB_NAMESPACE
-
-#endif  // LEVELDB_DM_ZONE_H

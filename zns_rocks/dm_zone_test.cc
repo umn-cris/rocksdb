@@ -24,7 +24,7 @@ int main() {
     ZoneAddress zoneAddress;
     zoneAddress.zone_id = i;
     zoneAddress.offset = 0;
-    std::string str = "that is test" + to_string(i);
+    std::string str = "that is test" + std::to_string(i);
     zoneAddress.length = str.size();
     dmzone->ZoneWrite(zoneAddress, str.c_str());
   }

@@ -1,5 +1,5 @@
-#ifndef ZONE_NAMESPACE_H_
-#define ZONE_NAMESPACE_H_
+
+#pragma once
 
 #include <iostream>
 #include <list>
@@ -10,19 +10,18 @@
 
 #include "rocksdb/status.h"
 
-//#include <tr1/memory>
-//#include <bits/shared_ptr.h>
+namespace ROCKSDB_NAMESPACE {
+
 static const size_t ZONESIZE = 512 * 1024 * 1024;
 const bool if_debug = true;
 const long ZONEFile_NUMBER = 5;
-
-namespace ROCKSDB_NAMESPACE {
 
 enum ZoneType {
   CONVENTIONAL,
   SEQUENTIAL_WRITE_PREFERRED,
   SEQUENTIAL_WRITE_REQUIRED
 };
+
 static const std::string TypeStr[] = {
     "CONVENTIONAL", "SEQUENTIAL_WRITE_PREFERRED", "SEQUENTIAL_WRITE_REQUIRED"};
 enum ZoneCondition { OPEN, CLOSED };
@@ -107,5 +106,3 @@ class ZoneNamespace {
 };
 
 }  // namespace ROCKSDB_NAMESPACE
-
-#endif  // ZONE_NAMESPACE_H_

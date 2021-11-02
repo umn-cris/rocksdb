@@ -7,23 +7,25 @@
 //
 
 #include "zns_rocks/hm_zone.h"
-#include "rocksdb/status.h"
 
 #include <cassert>
 #include <iostream>
 
+#include "rocksdb/db.h"
+#include "rocksdb/status.h"
+
 namespace ROCKSDB_NAMESPACE {
 
 int main() {
-  leveldb::DB *db;
-  leveldb::Options options;
+  DB *db;
+  Options options;
   options.create_if_missing = true;
-  leveldb::Status status = leveldb::DB::Open(options, "testdb", &db);
+  Status status = DB::Open(options, "testdb", &db);
   assert(status.ok());
 
   status = db->Put(WriteOptions(), "KeyNameExample", "ValueExample");
   assert(status.ok());
-  string res;
+  std::string res;
   status = db->Get(ReadOptions(), "KeyNameExample", &res);
   assert(status.ok());
   std::cout << res << std::endl;

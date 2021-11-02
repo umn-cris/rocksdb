@@ -5,26 +5,28 @@
 #include <cassert>
 #include <iostream>
 
+#include "rocksdb/db.h"
+#include "rocksdb/file_system.h"
+#include "rocksdb/status.h"
 #include "zns_rocks/hm_zone.h"
 #include "zns_rocks/zns_file_writer.h"
 #include "zns_rocks/zone_mapping.h"
-#include "rocksdb/status.h"
 
 namespace ROCKSDB_NAMESPACE {
 
 int main() {
-  leveldb::DB* db;
-  leveldb::Options options;
+  DB* db;
+  Options options;
   options.create_if_missing = true;
-  leveldb::Status status = leveldb::DB::Open(options, "testdb", &db);
+  Status status = DB::Open(options, "testdb", &db);
   assert(status.ok());
 
   status = db->Put(WriteOptions(), "KeyNameExample", "ValueExample");
   assert(status.ok());
-  string res;
+  std::string res;
   status = db->Get(ReadOptions(), "KeyNameExample", &res);
   assert(status.ok());
-  cout << res << endl;
+  std::cout << res << std::endl;
 
   ZnsFileWriterManager* fw_manager = GetDefualtZnsFileWriterManager();
   ZoneMapping* zone_mapping = fw_manager->GetZoneMapping();
@@ -67,12 +69,12 @@ int main() {
 
   char buffer[18];
   fw_manager->ReadDataOnFile("test_file.sst", 0, 18, buffer);
-  cout << buffer << endl;
+  std::cout << buffer << std::endl;
   fw_manager->ReadDataOnFile("test_file.sst", 3, 18, buffer);
-  cout << buffer << endl;
+  std::cout << buffer << std::endl;
   char buffer1[18];
   fw_manager->ReadDataOnFile("test_file.sst", 40, 18, buffer1);
-  cout << buffer1 << endl;
+  std::cout << buffer1 << std::endl;
 
   fw_manager->CloseFile(fw2, "test_file.sst");
   zone_mapping->GetZnsFileInfo("test_file.sst", &file_info);

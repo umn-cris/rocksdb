@@ -3,29 +3,33 @@
 //
 
 #include "zns_rocks/dm_zone.h"
-#include "rocksdb/status.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <cassert>
+#include <iostream>
+
+#include "rocksdb/status.h"
+
 namespace ROCKSDB_NAMESPACE {
 
-static string path = "Dm_zones_";
+static std::string path = "Dm_zones_";
 
-DmZone::DmZone(fstream &fs, size_t id) {
+DmZone::DmZone(std::fstream &fs, size_t id) {
   // zone_info_ = (struct ZoneInfo*)malloc(sizeof(struct ZoneInfo));
   zoneInfo_.id = id;
   zoneInfo_.write_pointer = 0;
   zoneInfo_.zone_type = SEQUENTIAL_WRITE_REQUIRED;
   zoneInfo_.zone_condition = CLOSED;
   zoneInfo_.zone_state = SEQUENTIAL;
-  fstream modify_zone_;
-  modify_zone_.open(path + "/" + to_string(zoneInfo_.id), ios::out);
+  std::fstream modify_zone_;
+  modify_zone_.open(path + "/" + std::to_string(zoneInfo_.id), std::ios::out);
   if (!modify_zone_.is_open())
-    cout << "[Dm_zone.cpp] [DmZone] create zone file failed" << endl;
+    std::cout << "[Dm_zone.cpp] [DmZone] create zone file failed" << std::endl;
   // modify_zone_<<ToString()<<endl;
   modify_zone_.close();
-  if (if_debug) cout << "create zone " << zoneInfo_.id << endl;
+  if (if_debug) std::cout << "create zone " << zoneInfo_.id << std::endl;
 }
 
 // for correctness, OpenZone only change zone state. Zone file will only be open
@@ -39,7 +43,7 @@ Status DmZone::OpenZone() {
   }*/
   zoneInfo_.zone_condition = OPEN;
   status = Status::OK();
-  if (if_debug) cout << "open zone " << zoneInfo_.id << endl;
+  if (if_debug) std::cout << "open zone " << zoneInfo_.id << std::endl;
   return status;
 }
 
@@ -48,12 +52,12 @@ Status DmZone::FinishZone() {
   zoneInfo_.write_pointer = ZONESIZE;
   zoneInfo_.size = ZONESIZE;
   status = Status::OK();
-  if (if_debug) cout << "finishe zone " << zoneInfo_.id << endl;
+  if (if_debug) std::cout << "finishe zone " << zoneInfo_.id << std::endl;
   return status;
 }
 
 ZoneInfo DmZone::ReportZone() {
-  if (if_debug) cout << "report zone " << zoneInfo_.id << endl;
+  if (if_debug) std::cout << "report zone " << zoneInfo_.id << std::endl;
   return zoneInfo_;
 }
 
@@ -68,8 +72,8 @@ Status DmZone::ResetWritePointer() {
   // no close here!
   status = Status::OK();
   if (if_debug)
-    cout << "in [dm_zone] [ResetWritePointer] reset zone [" << zoneInfo_.id
-         << "]" << endl;
+    std::cout << "in [dm_zone] [ResetWritePointer] reset zone [" << zoneInfo_.id
+              << "]" << std::endl;
 
   return status;
 }
@@ -83,7 +87,7 @@ Status DmZone::CloseZone() {
   // modify_zone_<<ToString()<<endl;
   // modify_zone_.close();
   status = Status::OK();
-  if (if_debug) cout << "close zone " << zoneInfo_.id << endl;
+  if (if_debug) std::cout << "close zone " << zoneInfo_.id << std::endl;
   return status;
 }
 
@@ -93,23 +97,23 @@ Status DmZone::ZoneWrite(ZoneAddress addr, const char *data) {
   // only change zone state, open operation will be handle manually in next line
   // this will help avoid unexpected bug (i.e., avoid opening a file both for
   // read and write, and reset read/write pointer at the same time)
-  cout << "ready to write zone [" << addr.zone_id << "]";
+  std::cout << "ready to write zone [" << addr.zone_id << "]";
   status = OpenZone();
   if (zoneInfo_.write_pointer + addr.length > ZONESIZE) {
     status = Status::InvalidArgument(
         "[Dm_zone.cpp] [ZoneWrite] WriteZone failed, reach end of zone file, "
         "zone id: " +
-        to_string(zoneInfo_.id));
+        std::to_string(zoneInfo_.id));
     return status;
   }
   // only "ios::out" rather than "ios::out|ios::in"
-  fstream modify_zone_;
-  modify_zone_.open(path + "/" + to_string(zoneInfo_.id),
-                    ios::out | ios::binary);
+  std::fstream modify_zone_;
+  modify_zone_.open(path + "/" + std::to_string(zoneInfo_.id),
+                    std::ios::out | std::ios::binary);
   if (!modify_zone_.is_open()) {
     status = Status::NotFound(
         "[Dm_zone.cpp] [ZoneWrite] OpenZone failed, zone id: " +
-        to_string(zoneInfo_.id));
+        std::to_string(zoneInfo_.id));
     return status;
   }
 
@@ -117,11 +121,11 @@ Status DmZone::ZoneWrite(ZoneAddress addr, const char *data) {
   if (addr.offset != zoneInfo_.write_pointer) {
     // for a sequential required zone,
     if (zoneInfo_.zone_type == SEQUENTIAL_WRITE_REQUIRED) {
-      cout << "" << endl;
+      std::cout << "" << std::endl;
       status.NotSupported(
           "[Dm_zone.cpp] [ZoneWrite] it is not a sequential write, sequential "
           "write required. Zone id: " +
-          to_string(addr.zone_id));
+          std::to_string(addr.zone_id));
       return status;
     } else if (zoneInfo_.zone_type == SEQUENTIAL_WRITE_PREFERRED) {
       zoneInfo_.zone_state = NON_SEQUENTIAL;
@@ -135,12 +139,12 @@ Status DmZone::ZoneWrite(ZoneAddress addr, const char *data) {
       status = Status::InvalidArgument(
           "[Dm_zone.cpp] [ZoneWrite] WriteZone failed, no remain space / write "
           "mode error / format error... zone id: " +
-          to_string(zoneInfo_.id));
+          std::to_string(zoneInfo_.id));
     else
       status = Status::InvalidArgument(
           "[Dm_zone.cpp] [ZoneWrite] WriteZone failed, unknown reasons, need "
           "further checking. zone id: " +
-          to_string(zoneInfo_.id));
+          std::to_string(zoneInfo_.id));
   }
   modify_zone_.close();
   zoneInfo_.size += addr.length;
@@ -150,16 +154,16 @@ Status DmZone::ZoneWrite(ZoneAddress addr, const char *data) {
 
 Status DmZone::ZoneRead(ZoneAddress addr, char *data) {
   Status status;
-  cout << "ready to read zone [" << addr.zone_id << "]";
+  std::cout << "ready to read zone [" << addr.zone_id << "]";
   status = OpenZone();
-  fstream modify_zone_;
-  modify_zone_.open(path + "/" + to_string(zoneInfo_.id),
-                    ios::in | ios::binary);
+  std::fstream modify_zone_;
+  modify_zone_.open(path + "/" + std::to_string(zoneInfo_.id),
+                    std::ios::in | std::ios::binary);
 
   if (!modify_zone_.is_open()) {
     status =
         Status::NotFound("[Dm_zone.cpp] [ZoneRead] OpenZone failed, zone id: " +
-                         to_string(zoneInfo_.id));
+                         std::to_string(zoneInfo_.id));
     return status;
   }
 
@@ -170,12 +174,12 @@ Status DmZone::ZoneRead(ZoneAddress addr, char *data) {
       status = Status::InvalidArgument(
           "[Dm_zone.cpp] [ZoneRead] ReadZone failed, reach end of zone file, "
           "zone id: " +
-          to_string(zoneInfo_.id));
+          std::to_string(zoneInfo_.id));
     else if (modify_zone_.fail())
       status = Status::InvalidArgument(
           "[Dm_zone.cpp] [ZoneRead] ReadZone failed, no remain space / read "
           "mode error / format error... zone id: " +
-          to_string(zoneInfo_.id));
+          std::to_string(zoneInfo_.id));
   }
   modify_zone_.close();
   return status;
@@ -228,15 +232,15 @@ failed, zone id: " + to_string(addr.zone_id)); return status;
 
 Status DmZoneNamespace::NewZone() {
   Status status;
-  fstream fs;
+  std::fstream fs;
   // begin: modification for shared_ptr
-  shared_ptr<DmZone> zone_ptr(new DmZone(fs, next_zone_id_));
+  std::shared_ptr<DmZone> zone_ptr(new DmZone(fs, next_zone_id_));
   auto it = zones_.emplace(next_zone_id_, zone_ptr);
   // end
   if (!it.second) {
     status = Status::InvalidArgument(
         "[Dm_zone.cpp] [NewZone] already has a zone in ZNS, zone id: " +
-        to_string(next_zone_id_));
+        std::to_string(next_zone_id_));
     return status;
   }
   // all new zone should insert in the wear-leveling window. since they are new
@@ -250,8 +254,9 @@ Status DmZoneNamespace::NewZone() {
   return status;
 }
 
-Status DmZoneNamespace::SwapZone(list<shared_ptr<DmZone>>::iterator bottom_zone,
-                                 list<shared_ptr<DmZone>>::iterator top_zone) {
+Status DmZoneNamespace::SwapZone(
+    std::list<std::shared_ptr<DmZone>>::iterator bottom_zone,
+    std::list<std::shared_ptr<DmZone>>::iterator top_zone) {
   Status status;
   // lock
   // migrate data, need to read from both bottom zone & top zone, and write into
@@ -333,7 +338,7 @@ Status DmZoneNamespace::SwapZone(list<shared_ptr<DmZone>>::iterator bottom_zone,
   // unlock
 
   // insert to corresponding level, level = erase count % number of levels
-  shared_ptr<DmZone> bottom_zone_after_reset_ptr;
+  std::shared_ptr<DmZone> bottom_zone_after_reset_ptr;
   bottom_zone_after_reset_ptr = *bottom_zone;
   int new_level = bottom_zone_after_reset_ptr->zoneInfo_.erase_count_ %
                   WEAR_LEVELING_WINDOW_SIZE;
@@ -343,7 +348,7 @@ Status DmZoneNamespace::SwapZone(list<shared_ptr<DmZone>>::iterator bottom_zone,
   // erase(it) return it++
   bottom_zone = window_[old_level].erase(bottom_zone);
 
-  shared_ptr<DmZone> top_zone_after_reset_ptr;
+  std::shared_ptr<DmZone> top_zone_after_reset_ptr;
   top_zone_after_reset_ptr = *top_zone;
   new_level = top_zone_after_reset_ptr->zoneInfo_.erase_count_ %
               WEAR_LEVELING_WINDOW_SIZE;
@@ -355,7 +360,7 @@ Status DmZoneNamespace::SwapZone(list<shared_ptr<DmZone>>::iterator bottom_zone,
   return status;
 }
 
-Status DmZoneNamespace::GC(list<shared_ptr<DmZone>>::iterator it) {
+Status DmZoneNamespace::GC(std::list<std::shared_ptr<DmZone>>::iterator it) {
   Status status;
   int toplevel = ((*it)->zoneInfo_.erase_count_) % WEAR_LEVELING_WINDOW_SIZE;
   int bottomlevel = (toplevel + 1) % WEAR_LEVELING_WINDOW_SIZE;
@@ -367,14 +372,15 @@ Status DmZoneNamespace::GC(list<shared_ptr<DmZone>>::iterator it) {
     bottomlevel = (bottomlevel + 1) % WEAR_LEVELING_WINDOW_SIZE;
     bottom_size = window_[bottomlevel].size();
     if (toplevel == bottomlevel) {
-      cout << "all zones are in top level, stop swap" << endl;
+      std::cout << "all zones are in top level, stop swap" << std::endl;
       status = Status::OK();
       return status;
     }
   }
   if (if_debug)
-    cout << "toplevel: " << toplevel << " bottom level: " << bottomlevel
-         << " topsize: " << top_size << " bottomsize: " << bottom_size << endl;
+    std::cout << "toplevel: " << toplevel << " bottom level: " << bottomlevel
+              << " topsize: " << top_size << " bottomsize: " << bottom_size
+              << endl;
 
   auto bottom_it = window_[bottomlevel].begin();
   auto top_it = window_[toplevel].begin();
@@ -396,8 +402,8 @@ Status DmZoneNamespace::GC(list<shared_ptr<DmZone>>::iterator it) {
   else if (bottom_size > ZONEFile_NUMBER / 2.0) {
     int i = 0;
     for (; i < top_size; ++i) {
-      cout << "bottom it:" << (*bottom_it)->zoneInfo_.id << endl;
-      cout << "top it:" << (*top_it)->zoneInfo_.id << endl;
+      std::cout << "bottom it:" << (*bottom_it)->zoneInfo_.id << std::endl;
+      std::cout << "top it:" << (*top_it)->zoneInfo_.id << std::endl;
 
       status = SwapZone(bottom_it, top_it);
       if (!status.ok()) {
@@ -452,7 +458,7 @@ Status DmZoneNamespace::GC(list<shared_ptr<DmZone>>::iterator it) {
  * if necessary, GC will call migrate*/
 Status DmZoneNamespace::Resetptr(int id) {
   Status status;
-  shared_ptr<Zone> dmzone = GetZone(id);
+  std::shared_ptr<Zone> dmzone = GetZone(id);
   // in window, reschedule this zone
   // window is a circular vector, level = erase count % # of levels
   int list_level = dmzone->zoneInfo_.erase_count_ % WEAR_LEVELING_WINDOW_SIZE;
@@ -462,9 +468,9 @@ Status DmZoneNamespace::Resetptr(int id) {
       // find that zone in the list
       status = Status::OK();
       if (if_debug)
-        cout << "[dm_zone.cpp] [Resetptr] find target zone [" << id
-             << "] in list level: " << list_level
-             << ", try to reschedule to upper list" << endl;
+        std::cout << "[dm_zone.cpp] [Resetptr] find target zone [" << id
+                  << "] in list level: " << list_level
+                  << ", try to reschedule to upper list" << std::endl;
       break;
     }
     it++;
@@ -479,12 +485,13 @@ Status DmZoneNamespace::Resetptr(int id) {
   if (list_level + 1 >= WEAR_LEVELING_WINDOW_SIZE) {
     // GC would call migrate, reschedule this zone to proper level
     if (if_debug)
-      cout << "[dm_zone] [Resetptr] zone LBA [" << id << "], PBA ["
-           << (*it)->zoneInfo_.id
-           << "], trigger GC, current levelist: " << list_level << endl;
+      std::cout << "[dm_zone] [Resetptr] zone LBA [" << id << "], PBA ["
+                << (*it)->zoneInfo_.id
+                << "], trigger GC, current levelist: " << list_level
+                << std::endl;
     status = GC(it);
     if (!status.ok()) {
-      cout << status.ToString() << endl;
+      std::cout << status.ToString() << std::endl;
       status = Status::NotFound("[dm_zone.cpp] [Resetptr] GC failed");
       return status;
     }
@@ -521,15 +528,17 @@ Status DmZoneNamespace::InitZNS(const char *dir_name) {
     // creat dir
     int success = mkdir(dir_name, S_IRWXU);
     if (success == 0) {
-      cout << "[Dm_zone.cpp] [init_scanner] first time open this ZNS, create "
-              "dir "
-           << dir_name << endl;
+      std::cout
+          << "[Dm_zone.cpp] [init_scanner] first time open this ZNS, create "
+             "dir "
+          << dir_name << std::endl;
       status = Status::OK();
     }
     if (success == -1) {
-      cout << "[Dm_zone.cpp] [init_scanner] first time open this ZNS. However, "
-              "create dir "
-           << dir_name << " failed" << endl;
+      std::cout
+          << "[Dm_zone.cpp] [init_scanner] first time open this ZNS. However, "
+             "create dir "
+          << dir_name << " failed" << std::endl;
       status = Status::NotSupported("dirctory create filed");
     }
     return status;
@@ -539,8 +548,8 @@ Status DmZoneNamespace::InitZNS(const char *dir_name) {
   DIR *dir;                 // return value for opendir()
   dir = opendir(dir_name);
   if (NULL == dir) {
-    cout << "[Dm_zone.cpp] [init_scanner] Can not open dir " << dir_name
-         << endl;
+    std::cout << "[Dm_zone.cpp] [init_scanner] Can not open dir " << dir_name
+              << std::endl;
     status = Status::NotFound("dirctory open filed");
     return status;
   }
@@ -563,7 +572,7 @@ Status DmZoneNamespace::InitZNS(const char *dir_name) {
   }
   // for dmZNS, create wearleveling used window, record each zone's erase count
   for (int i = 0; i < WEAR_LEVELING_WINDOW_SIZE; i++) {
-    list<shared_ptr<DmZone>> new_list;
+    std::list<std::shared_ptr<DmZone>> new_list;
     window_.push_back(new_list);
   }
 
@@ -571,11 +580,11 @@ Status DmZoneNamespace::InitZNS(const char *dir_name) {
   for (int i = 0; i < ZONEFile_NUMBER; ++i) {
     status = NewZone();
     if (!status.ok()) {
-      cout << status.ToString() << endl;
+      std::cout << status.ToString() << std::endl;
       status = Status::Corruption(
           "[hm_zone.cpp] [InitZNS] in ZNS Initialization, create new zone file "
           "failed, zone id: " +
-          to_string(next_zone_id_));
+          std::to_string(next_zone_id_));
       return status;
     }
   }
@@ -590,21 +599,21 @@ Status DmZoneNamespace::CheckGC() {
   for (int i = 0; i < WEAR_LEVELING_WINDOW_SIZE + 1; ++i) {
     Resetptr(0);
   }
-  shared_ptr<Zone> dmzone = GetZone(0);
+  std::shared_ptr<Zone> dmzone = GetZone(0);
   int list_level = dmzone->zoneInfo_.erase_count_ & WEAR_LEVELING_WINDOW_SIZE;
   auto it = window_[list_level].begin();
   while (it != window_[list_level].end()) {
     if ((*it)->zoneInfo_.id == dmzone->zoneInfo_.id) {
       // find that zone in the list
-      cout << "in [dm_zone.cpp] [CheckGC] find target zone in list level: "
-           << list_level << endl;
+      std::cout << "in [dm_zone.cpp] [CheckGC] find target zone in list level: "
+                << list_level << std::endl;
       status = Status::OK();
       break;
     }
     it++;
   }
   if (!status.ok()) {
-    cout << "don't find target zone in window" << endl;
+    std::cout << "don't find target zone in window" << std::endl;
   }
   return status;
 }

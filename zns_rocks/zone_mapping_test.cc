@@ -8,15 +8,16 @@
 #include <iostream>
 
 #include "hm_zone.h"
+#include "rocksdb/db.h"
 #include "rocksdb/status.h"
 
 namespace ROCKSDB_NAMESPACE {
 
 int main() {
-  leveldb::DB* db;
-  leveldb::Options options;
+  DB* db;
+  Options options;
   options.create_if_missing = true;
-  leveldb::Status status = leveldb::DB::Open(options, "testdb", &db);
+  Status status = DB::Open(options, "testdb", &db);
   assert(status.ok());
 
   status = db->Put(WriteOptions(), "KeyNameExample", "ValueExample");
