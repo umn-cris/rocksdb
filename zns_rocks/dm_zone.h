@@ -124,7 +124,7 @@ class DmZoneNamespace : public ZoneNamespace {
   }
 
   Status InitZNS(const char* dir_name) override;
-  Status InitZone(const char* path, const char* filename,
+  Status InitZone(const char* Zonepath, const char* filename,
                   char* filepath) override;
   // Status Write(ZoneAddress addr, const char* data) override;
   // Status Read(ZoneAddress addr,  char* data) override;

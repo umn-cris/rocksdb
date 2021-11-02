@@ -18,7 +18,7 @@ ZnsFileWriterManager::ZnsFileWriterManager(ZoneMapping* zone_mapping) {
 }
 
 ZnsFileWriterManager::~ZnsFileWriterManager() {
-  for (int i = 0; i < file_writers_.size(); i++) {
+  for (size_t i = 0; i < file_writers_.size(); i++) {
     if (file_writers_[i] != nullptr) {
       free(file_writers_[i]);
     }

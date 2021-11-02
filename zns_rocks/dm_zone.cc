@@ -13,7 +13,6 @@
 #include "rocksdb/status.h"
 
 namespace ROCKSDB_NAMESPACE {
-
 static std::string path = "Dm_zones_";
 
 DmZone::DmZone(std::fstream &fs, size_t id) {
@@ -331,9 +330,9 @@ Status DmZoneNamespace::SwapZone(
   }
   if (if_debug) {
     if (!(find_bottomzone && find_topzone))
-      cout << "in [dm_zone.cpp] [SwapZone] try to swap 2 zone's LBA2PBA "
+      std::cout << "in [dm_zone.cpp] [SwapZone] try to swap 2 zone's LBA2PBA "
               "mapping, but don't find the zones that need to be swapped"
-           << endl;
+           << std::endl;
   }
   // unlock
 
@@ -380,7 +379,7 @@ Status DmZoneNamespace::GC(std::list<std::shared_ptr<DmZone>>::iterator it) {
   if (if_debug)
     std::cout << "toplevel: " << toplevel << " bottom level: " << bottomlevel
               << " topsize: " << top_size << " bottomsize: " << bottom_size
-              << endl;
+              << std::endl;
 
   auto bottom_it = window_[bottomlevel].begin();
   auto top_it = window_[toplevel].begin();
@@ -509,10 +508,10 @@ Status DmZoneNamespace::Resetptr(int id) {
   return status;
 }
 
-Status DmZoneNamespace::InitZone(const char *path, const char *filename,
+Status DmZoneNamespace::InitZone(const char *Zonepath, const char *filename,
                                  char *filepath) {
-  strcpy(filepath, path);
-  if (filepath[strlen(path) - 1] != '/') strcat(filepath, "/");
+  strcpy(filepath, Zonepath);
+  if (filepath[strlen(Zonepath) - 1] != '/') strcat(filepath, "/");
   strcat(filepath, filename);
   printf("[Dm_zone.cpp] [InitZone] path is = %s\n", filepath);
   return Status::OK();

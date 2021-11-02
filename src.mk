@@ -1,8 +1,12 @@
 # These are the sources from which librocksdb.a is built:
 LIB_SOURCES =                                                   \
+  zns_rocks/dm_zone.cc                                          \
+  zns_rocks/hm_zone.cc                                          \
+  zns_rocks/zns_file_writer.cc                                 \
+  zns_rocks/zone_mapping.cc                                     \
   cache/cache.cc                                                \
   cache/cache_entry_roles.cc                                    \
-  cache/cache_reservation_manager.cc                                            \
+  cache/cache_reservation_manager.cc                            \
   cache/clock_cache.cc                                          \
   cache/lru_cache.cc                                            \
   cache/sharded_cache.cc                                        \

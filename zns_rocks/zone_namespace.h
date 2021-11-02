@@ -2,12 +2,13 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+#include <rocksdb/db.h>
 #include "rocksdb/status.h"
 
 namespace ROCKSDB_NAMESPACE {
@@ -96,7 +97,7 @@ class ZoneNamespace {
   virtual Status Resetptr(int id) = 0;
   virtual Status InitZNS(const char* dir_name) = 0;
 
-  virtual Status InitZone(const char* path, const char* filename,
+  virtual Status InitZone(const char* Zonepath, const char* filename,
                           char* filepath) = 0;
 
   // virtual Status Write(ZoneAddress addr, const char* data) = 0;

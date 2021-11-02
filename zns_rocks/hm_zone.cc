@@ -262,10 +262,10 @@ Status HmZoneNamespace::NewZone() {
 }
 
 // a filepath completion function, used in "InitZNS"
-Status HmZoneNamespace::InitZone(const char *path, const char *filename,
+Status HmZoneNamespace::InitZone(const char *Zonepath, const char *filename,
                                  char *filepath) {
-  strcpy(filepath, path);
-  if (filepath[strlen(path) - 1] != '/') strcat(filepath, "/");
+  strcpy(filepath, Zonepath);
+  if (filepath[strlen(Zonepath) - 1] != '/') strcat(filepath, "/");
   strcat(filepath, filename);
   // printf("[hm_zone.cpp] [InitZone] path is = %s\n",filepath);
   return Status::OK();
