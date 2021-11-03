@@ -1,5 +1,17 @@
 ## Compilation
 
+**ZNS_Rocks**:
+ZNS environment has bee added into Rocksdb compilation (via modify CMake). 
+To compile:
+cd Rocksdb root dir
+mkdir build
+cd build
+cmake ..
+make/make static_lib/make check/make all ... (all make commands should work)
+
+
+
+
 **Important**: If you plan to run RocksDB in production, don't compile using default
 `make` or `make all`. That will compile RocksDB in debug mode, which is much slower
 than release mode.
