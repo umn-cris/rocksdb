@@ -25,7 +25,7 @@ failed"<<endl;
     modify_zone_.close();
     //if(if_debug) cout<<"create zone "<<zoneInfo_.id<<endl;
 }*/
-HmZone::HmZone(std::fstream &fs, size_t id) {
+HmZone::HmZone(size_t id) {
   // zone_info_ = (struct ZoneInfo*)malloc(sizeof(struct ZoneInfo));
   zoneInfo_.id = id;
   zoneInfo_.write_pointer = 0;
@@ -245,9 +245,8 @@ Status HmZoneNamespace::Resetptr(int id) {
 
 Status HmZoneNamespace::NewZone() {
   Status status;
-  std::fstream fs;
   // begin: modification for shared_ptr
-  std::shared_ptr<HmZone> zone_ptr(new HmZone(fs, next_zone_id_));
+  std::shared_ptr<HmZone> zone_ptr(new HmZone(next_zone_id_));
   auto it = zones_.emplace(next_zone_id_, zone_ptr);
   // end
   if (!it.second) {

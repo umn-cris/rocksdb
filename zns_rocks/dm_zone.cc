@@ -15,7 +15,7 @@
 namespace ROCKSDB_NAMESPACE {
 static std::string path = "Dm_zones_";
 
-DmZone::DmZone(std::fstream &fs, size_t id) {
+DmZone::DmZone(size_t id) {
   // zone_info_ = (struct ZoneInfo*)malloc(sizeof(struct ZoneInfo));
   zoneInfo_.id = id;
   zoneInfo_.write_pointer = 0;
@@ -231,9 +231,8 @@ failed, zone id: " + to_string(addr.zone_id)); return status;
 
 Status DmZoneNamespace::NewZone() {
   Status status;
-  std::fstream fs;
   // begin: modification for shared_ptr
-  std::shared_ptr<DmZone> zone_ptr(new DmZone(fs, next_zone_id_));
+  std::shared_ptr<DmZone> zone_ptr(new DmZone(next_zone_id_));
   auto it = zones_.emplace(next_zone_id_, zone_ptr);
   // end
   if (!it.second) {

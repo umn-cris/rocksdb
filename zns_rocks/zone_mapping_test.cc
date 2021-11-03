@@ -11,9 +11,8 @@
 #include "rocksdb/db.h"
 #include "rocksdb/status.h"
 
-namespace ROCKSDB_NAMESPACE {
-
-int main() {
+using namespace rocksdb;
+int main(int argc, char **argv) {
   DB* db;
   Options options;
   options.create_if_missing = true;
@@ -103,4 +102,4 @@ int main() {
   return 0;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+

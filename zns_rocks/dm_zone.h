@@ -21,10 +21,10 @@ static const std::string ZoneHotness[] = {"HOT", "COLD"};
 
 class DmZone : public Zone {
  public:
-  DmZone(std::fstream& fs){};
+  DmZone(){};
   ~DmZone(){};
   // need to assign: ZoneID, write_pointer, ....
-  DmZone(std::fstream& fs, size_t id);
+  DmZone(size_t id);
 
   // based on Zone id to open file
   // set C++ put pointer according to the write_pointer in zone
