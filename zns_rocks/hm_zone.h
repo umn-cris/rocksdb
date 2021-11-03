@@ -15,10 +15,10 @@ namespace ROCKSDB_NAMESPACE {
 class HmZone : public Zone {
  public:
   // HmZone(fstream& fs):modify_zone_(fs){};
-  HmZone(std::fstream& fs){};
+  HmZone(){};
   ~HmZone(){};
   // need to assign: ZoneID, write_pointer, ....
-  HmZone(std::fstream& fs, size_t id);
+  HmZone(size_t id);
 
   // based on Zone id to open file
   // set C++ put pointer according to the write_pointer in zone
@@ -104,7 +104,7 @@ class HmZoneNamespace : public ZoneNamespace {
   }
 
   Status InitZNS(const char* dir_name) override;
-  Status InitZone(const char* path, const char* filename,
+  Status InitZone(const char* Zonepath, const char* filename,
                   char* filepath) override;
   // Status Write(ZoneAddress addr, const char* data) override;
   // Status Read(ZoneAddress addr,  char* data) override;

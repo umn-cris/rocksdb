@@ -21,10 +21,10 @@ static const std::string ZoneHotness[] = {"HOT", "COLD"};
 
 class DmZone : public Zone {
  public:
-  DmZone(std::fstream& fs){};
+  DmZone(){};
   ~DmZone(){};
   // need to assign: ZoneID, write_pointer, ....
-  DmZone(std::fstream& fs, size_t id);
+  DmZone(size_t id);
 
   // based on Zone id to open file
   // set C++ put pointer according to the write_pointer in zone
@@ -124,7 +124,7 @@ class DmZoneNamespace : public ZoneNamespace {
   }
 
   Status InitZNS(const char* dir_name) override;
-  Status InitZone(const char* path, const char* filename,
+  Status InitZone(const char* Zonepath, const char* filename,
                   char* filepath) override;
   // Status Write(ZoneAddress addr, const char* data) override;
   // Status Read(ZoneAddress addr,  char* data) override;

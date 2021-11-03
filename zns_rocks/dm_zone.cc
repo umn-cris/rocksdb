@@ -13,10 +13,9 @@
 #include "rocksdb/status.h"
 
 namespace ROCKSDB_NAMESPACE {
-
 static std::string path = "Dm_zones_";
 
-DmZone::DmZone(std::fstream &fs, size_t id) {
+DmZone::DmZone(size_t id) {
   // zone_info_ = (struct ZoneInfo*)malloc(sizeof(struct ZoneInfo));
   zoneInfo_.id = id;
   zoneInfo_.write_pointer = 0;
@@ -232,9 +231,8 @@ failed, zone id: " + to_string(addr.zone_id)); return status;
 
 Status DmZoneNamespace::NewZone() {
   Status status;
-  std::fstream fs;
   // begin: modification for shared_ptr
-  std::shared_ptr<DmZone> zone_ptr(new DmZone(fs, next_zone_id_));
+  std::shared_ptr<DmZone> zone_ptr(new DmZone(next_zone_id_));
   auto it = zones_.emplace(next_zone_id_, zone_ptr);
   // end
   if (!it.second) {
@@ -331,9 +329,9 @@ Status DmZoneNamespace::SwapZone(
   }
   if (if_debug) {
     if (!(find_bottomzone && find_topzone))
-      cout << "in [dm_zone.cpp] [SwapZone] try to swap 2 zone's LBA2PBA "
+      std::cout << "in [dm_zone.cpp] [SwapZone] try to swap 2 zone's LBA2PBA "
               "mapping, but don't find the zones that need to be swapped"
-           << endl;
+           << std::endl;
   }
   // unlock
 
@@ -380,7 +378,7 @@ Status DmZoneNamespace::GC(std::list<std::shared_ptr<DmZone>>::iterator it) {
   if (if_debug)
     std::cout << "toplevel: " << toplevel << " bottom level: " << bottomlevel
               << " topsize: " << top_size << " bottomsize: " << bottom_size
-              << endl;
+              << std::endl;
 
   auto bottom_it = window_[bottomlevel].begin();
   auto top_it = window_[toplevel].begin();
@@ -509,10 +507,10 @@ Status DmZoneNamespace::Resetptr(int id) {
   return status;
 }
 
-Status DmZoneNamespace::InitZone(const char *path, const char *filename,
+Status DmZoneNamespace::InitZone(const char *Zonepath, const char *filename,
                                  char *filepath) {
-  strcpy(filepath, path);
-  if (filepath[strlen(path) - 1] != '/') strcat(filepath, "/");
+  strcpy(filepath, Zonepath);
+  if (filepath[strlen(Zonepath) - 1] != '/') strcat(filepath, "/");
   strcat(filepath, filename);
   printf("[Dm_zone.cpp] [InitZone] path is = %s\n", filepath);
   return Status::OK();

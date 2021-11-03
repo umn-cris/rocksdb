@@ -25,7 +25,7 @@ failed"<<endl;
     modify_zone_.close();
     //if(if_debug) cout<<"create zone "<<zoneInfo_.id<<endl;
 }*/
-HmZone::HmZone(std::fstream &fs, size_t id) {
+HmZone::HmZone(size_t id) {
   // zone_info_ = (struct ZoneInfo*)malloc(sizeof(struct ZoneInfo));
   zoneInfo_.id = id;
   zoneInfo_.write_pointer = 0;
@@ -245,9 +245,8 @@ Status HmZoneNamespace::Resetptr(int id) {
 
 Status HmZoneNamespace::NewZone() {
   Status status;
-  std::fstream fs;
   // begin: modification for shared_ptr
-  std::shared_ptr<HmZone> zone_ptr(new HmZone(fs, next_zone_id_));
+  std::shared_ptr<HmZone> zone_ptr(new HmZone(next_zone_id_));
   auto it = zones_.emplace(next_zone_id_, zone_ptr);
   // end
   if (!it.second) {
@@ -262,10 +261,10 @@ Status HmZoneNamespace::NewZone() {
 }
 
 // a filepath completion function, used in "InitZNS"
-Status HmZoneNamespace::InitZone(const char *path, const char *filename,
+Status HmZoneNamespace::InitZone(const char *Zonepath, const char *filename,
                                  char *filepath) {
-  strcpy(filepath, path);
-  if (filepath[strlen(path) - 1] != '/') strcat(filepath, "/");
+  strcpy(filepath, Zonepath);
+  if (filepath[strlen(Zonepath) - 1] != '/') strcat(filepath, "/");
   strcat(filepath, filename);
   // printf("[hm_zone.cpp] [InitZone] path is = %s\n",filepath);
   return Status::OK();

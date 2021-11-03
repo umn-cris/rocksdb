@@ -7,17 +7,14 @@
 //
 
 #include "zns_rocks/hm_zone.h"
-
 #include <cassert>
 #include <iostream>
-
-#include "rocksdb/db.h"
 #include "rocksdb/status.h"
-
-namespace ROCKSDB_NAMESPACE {
-
-int main() {
-  DB *db;
+using namespace rocksdb;
+int main(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
+  DB* db;
   Options options;
   options.create_if_missing = true;
   Status status = DB::Open(options, "testdb", &db);
@@ -49,5 +46,3 @@ int main() {
   delete db;
   return 0;
 }
-
-}  // namespace ROCKSDB_NAMESPACE

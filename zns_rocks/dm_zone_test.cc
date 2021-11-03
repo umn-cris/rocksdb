@@ -10,9 +10,9 @@
 #include "zns_rocks/zone_namespace.h"
 #include "rocksdb/status.h"
 
-namespace ROCKSDB_NAMESPACE {
+using namespace rocksdb;
 
-int main() {
+int main(int argc, char **argv) {
   std::cout << "~~~~~~create DmZoneNamespace~~~~~~~~" << std::endl;
   std::shared_ptr<DmZoneNamespace> dmzonenamespace =
       DmZoneNamespace::CreatZoneNamespace();
@@ -47,4 +47,3 @@ int main() {
   return 0;
 }
 
-}  // namespace ROCKSDB_NAMESPACE

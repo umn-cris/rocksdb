@@ -634,6 +634,10 @@ find_package(Threads REQUIRED)
 # Main library source code
 
 set(SOURCES
+        zns_rocks/dm_zone.cc
+        zns_rocks/hm_zone.cc
+        zns_rocks/zns_file_writer.cc
+        zns_rocks/zone_mapping.cc
         cache/cache.cc
         cache/cache_entry_roles.cc
         cache/cache_reservation_manager.cc
@@ -1142,6 +1146,10 @@ if(WITH_TESTS)
   )
   if(WITH_ALL_TESTS)
     list(APPEND TESTS
+            zns_rocks/zone_mapping_test.cc
+            zns_rocks/dm_zone_test.cc
+            zns_rocks/hm_zone_test.cc
+            zns_rocks/file_writer_test.cc
         cache/cache_reservation_manager_test.cc
         cache/cache_test.cc
         cache/lru_cache_test.cc
